@@ -1,6 +1,11 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import UserList from "./components/UserList";
 import CreateUser from "./components/CreateUser";
+
+const countActiveUsers = (users) => {
+  console.log("활성 사용자 수를 세는 중...");
+  return users.filter((user) => user.active === true).length;
+};
 
 const App = () => {
   const [inputs, setInputs] = useState({
@@ -9,13 +14,16 @@ const App = () => {
   });
 
   const { username, email } = inputs;
-  const onChange = (e) => {
-    const { name, value } = e.target;
-    setInputs({
-      ...inputs,
-      [name]: value,
-    });
-  };
+  const onChange = useCallback(
+    (e) => {
+      const { name, value } = e.target;
+      setInputs({
+        ...inputs,
+        [name]: value,
+      });
+    },
+    [inputs]
+  );
 
   const [users, setUsers] = useState([
     {
@@ -40,7 +48,7 @@ const App = () => {
 
   // useRef의 파라미터를 넣으면 이 값이 기본 값이 됨
   const nextId = useRef(4);
-  const onCreate = () => {
+  const onCreate = useCallback(() => {
     if (!username || !email) return;
 
     const user = {
@@ -62,26 +70,27 @@ const App = () => {
     });
 
     nextId.current++;
-  };
+  }, [users, username, email]);
 
-  const onRemove = (id) => {
-    setUsers(users.filter((user) => user.id !== id));
-  };
+  const onRemove = useCallback(
+    (id) => {
+      setUsers(users.filter((user) => user.id !== id));
+    },
+    [users]
+  );
 
-  const fontColorHandler = (id) => {
-    setUsers(
-      users?.map((user) =>
-        user.id === id ? { ...user, active: !user.active } : user
-      )
-    );
-  };
+  const fontColorHandler = useCallback(
+    (id) => {
+      setUsers(
+        users?.map((user) =>
+          user.id === id ? { ...user, active: !user.active } : user
+        )
+      );
+    },
+    [users]
+  );
 
-  const countActiveUsers = () => {
-    console.log("활성 사용자 수를 세는 중...");
-    return users.filter((user) => user.active === true).length;
-  };
-
-  const count = useMemo(() => countActiveUsers(), [users]);
+  const count = useMemo(() => countActiveUsers(users), [users]);
 
   return (
     <div>

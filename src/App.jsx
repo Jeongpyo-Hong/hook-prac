@@ -1,6 +1,7 @@
 import React, { useCallback, useReducer, useRef } from "react";
 import UserList from "./components/UserList";
 import CreateUser from "./components/CreateUser";
+import useInput from "./hooks/useInput";
 
 const countActiveUsers = (users) => {
   console.log("활성 사용자 수를 세는 중...");
@@ -8,10 +9,6 @@ const countActiveUsers = (users) => {
 };
 
 const initialState = {
-  inputs: {
-    username: "",
-    email: "",
-  },
   users: [
     {
       id: 1,
@@ -35,29 +32,18 @@ const initialState = {
 };
 const reducer = (state, action) => {
   switch (action.type) {
-    case "CHANGE_INPUT":
-      return {
-        ...state,
-        inputs: {
-          ...state.inputs,
-          [action.name]: action.value,
-        },
-      };
     case "CREATE_USER":
       return {
-        inputs: initialState.inputs,
         users: state.users.concat(action.user),
       };
     case "TOGGLE_USER":
       return {
-        inputs: initialState.inputs,
         users: state.users.map((user) =>
           user.id === action.id ? { ...user, active: !user.active } : user
         ),
       };
     case "REMOVE_USER":
       return {
-        inputs: initialState.inputs,
         users: state.users.filter((user) => user.id !== action.id),
       };
     default:
@@ -66,21 +52,15 @@ const reducer = (state, action) => {
 };
 
 const App = () => {
+  const [{ username, email }, onChange, reset] = useInput({
+    username: "",
+    email: "",
+  });
+
   const [state, dispatch] = useReducer(reducer, initialState);
   const nextId = useRef(4);
 
   const { users } = state;
-  const { username, email } = state.inputs;
-
-  const onChange = useCallback((e) => {
-    const { name, value } = e.target;
-
-    dispatch({
-      type: "CHANGE_INPUT",
-      name,
-      value,
-    });
-  }, []);
 
   const onCreate = useCallback(() => {
     dispatch({
@@ -92,6 +72,7 @@ const App = () => {
       },
     });
     nextId.current++;
+    reset();
   }, [username, email]);
 
   const onToggle = useCallback((id) => {

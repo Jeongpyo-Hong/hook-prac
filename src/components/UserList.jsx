@@ -1,6 +1,6 @@
 import React from "react";
 
-const User = React.memo(({ user, onRemove, fontColorHandler }) => {
+const User = React.memo(({ user, onRemove, onToggle }) => {
   return (
     <div>
       <b
@@ -8,7 +8,7 @@ const User = React.memo(({ user, onRemove, fontColorHandler }) => {
           color: user.active ? "green" : "black",
           cursor: "pointer",
         }}
-        onClick={() => fontColorHandler(user.id)}
+        onClick={() => onToggle(user.id)}
       >
         {user.username}
       </b>
@@ -18,7 +18,7 @@ const User = React.memo(({ user, onRemove, fontColorHandler }) => {
   );
 });
 
-const UserList = ({ users, onRemove, fontColorHandler }) => {
+const UserList = ({ users, onRemove, onToggle }) => {
   return (
     <div>
       {users?.map((user) => (
@@ -26,7 +26,7 @@ const UserList = ({ users, onRemove, fontColorHandler }) => {
           key={user.id}
           user={user}
           onRemove={onRemove}
-          fontColorHandler={fontColorHandler}
+          onToggle={onToggle}
         />
       ))}
     </div>

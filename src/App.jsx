@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, { useCallback, useReducer, useRef } from "react";
 import UserList from "./components/UserList";
 import CreateUser from "./components/CreateUser";
 
@@ -7,22 +7,12 @@ const countActiveUsers = (users) => {
   return users.filter((user) => user.active === true).length;
 };
 
-const App = () => {
-  const [inputs, setInputs] = useState({
+const initialState = {
+  inputs: {
     username: "",
     email: "",
-  });
-
-  const { username, email } = inputs;
-  const onChange = useCallback((e) => {
-    const { name, value } = e.target;
-    setInputs((inputs) => ({
-      ...inputs,
-      [name]: value,
-    }));
-  }, []);
-
-  const [users, setUsers] = useState([
+  },
+  users: [
     {
       id: 1,
       username: "velopert",
@@ -41,47 +31,84 @@ const App = () => {
       email: "liz@example.com",
       active: false,
     },
-  ]);
+  ],
+};
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "CHANGE_INPUT":
+      return {
+        ...state,
+        inputs: {
+          ...state.inputs,
+          [action.name]: action.value,
+        },
+      };
+    case "CREATE_USER":
+      return {
+        inputs: initialState.inputs,
+        users: state.users.concat(action.user),
+      };
+    case "TOGGLE_USER":
+      return {
+        inputs: initialState.inputs,
+        users: state.users.map((user) =>
+          user.id === action.id ? { ...user, active: !user.active } : user
+        ),
+      };
+    case "REMOVE_USER":
+      return {
+        inputs: initialState.inputs,
+        users: state.users.filter((user) => user.id !== action.id),
+      };
+    default:
+      return state;
+  }
+};
 
-  // useRef의 파라미터를 넣으면 이 값이 기본 값이 됨
+const App = () => {
+  const [state, dispatch] = useReducer(reducer, initialState);
   const nextId = useRef(4);
-  const onCreate = useCallback(() => {
-    if (!username || !email) return;
 
-    const user = {
-      id: nextId.current,
-      username,
-      email,
-    };
+  const { users } = state;
+  const { username, email } = state.inputs;
 
-    /**
-     * 배열에 새 항목을 추가할 때,
-     *  스프레드 연산자(...) 또는 concat() 사용
-     */
-    setUsers((users) => [...users, user]);
-    // setUsers(users.concat(user));
+  const onChange = useCallback((e) => {
+    const { name, value } = e.target;
 
-    setInputs({
-      username: "",
-      email: "",
+    dispatch({
+      type: "CHANGE_INPUT",
+      name,
+      value,
     });
+  }, []);
 
+  const onCreate = useCallback(() => {
+    dispatch({
+      type: "CREATE_USER",
+      user: {
+        id: nextId.current,
+        username,
+        email,
+      },
+    });
     nextId.current++;
   }, [username, email]);
 
+  const onToggle = useCallback((id) => {
+    dispatch({
+      type: "TOGGLE_USER",
+      id,
+    });
+  }, []);
+
   const onRemove = useCallback((id) => {
-    setUsers((users) => users.filter((user) => user.id !== id));
+    dispatch({
+      type: "REMOVE_USER",
+      id,
+    });
   }, []);
 
-  const fontColorHandler = useCallback((id) => {
-    setUsers((users) =>
-      users?.map((user) =>
-        user.id === id ? { ...user, active: !user.active } : user
-      )
-    );
-  }, []);
-
-  const count = useMemo(() => countActiveUsers(users), [users]);
+  const count = countActiveUsers(users);
 
   return (
     <div>
@@ -91,11 +118,7 @@ const App = () => {
         onChange={onChange}
         onCreate={onCreate}
       />
-      <UserList
-        users={users}
-        onRemove={onRemove}
-        fontColorHandler={fontColorHandler}
-      />
+      <UserList users={users} onToggle={onToggle} onRemove={onRemove} />
       <div>활성 사용자 수: {count}</div>
     </div>
   );

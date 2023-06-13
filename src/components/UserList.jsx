@@ -1,18 +1,33 @@
 import React from "react";
 
-function User({ user }) {
+const User = ({ user, onRemove, fontColorHandler }) => {
   return (
     <div>
-      <b>{user.username}</b> <span>({user.email})</span>
+      <b
+        style={{
+          color: user.active ? "green" : "black",
+          cursor: "pointer",
+        }}
+        onClick={() => fontColorHandler(user.id)}
+      >
+        {user.username}
+      </b>
+      <span>({user.email})</span>
+      <button onClick={() => onRemove(user.id)}>삭제</button>
     </div>
   );
-}
+};
 
-const UserList = ({ users }) => {
+const UserList = ({ users, onRemove, fontColorHandler }) => {
   return (
     <div>
       {users?.map((user) => (
-        <User user={user} />
+        <User
+          key={user.id}
+          user={user}
+          onRemove={onRemove}
+          fontColorHandler={fontColorHandler}
+        />
       ))}
     </div>
   );

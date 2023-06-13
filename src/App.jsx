@@ -14,16 +14,13 @@ const App = () => {
   });
 
   const { username, email } = inputs;
-  const onChange = useCallback(
-    (e) => {
-      const { name, value } = e.target;
-      setInputs({
-        ...inputs,
-        [name]: value,
-      });
-    },
-    [inputs]
-  );
+  const onChange = useCallback((e) => {
+    const { name, value } = e.target;
+    setInputs((inputs) => ({
+      ...inputs,
+      [name]: value,
+    }));
+  }, []);
 
   const [users, setUsers] = useState([
     {
@@ -61,7 +58,7 @@ const App = () => {
      * 배열에 새 항목을 추가할 때,
      *  스프레드 연산자(...) 또는 concat() 사용
      */
-    setUsers([...users, user]);
+    setUsers((users) => [...users, user]);
     // setUsers(users.concat(user));
 
     setInputs({
@@ -70,25 +67,19 @@ const App = () => {
     });
 
     nextId.current++;
-  }, [users, username, email]);
+  }, [username, email]);
 
-  const onRemove = useCallback(
-    (id) => {
-      setUsers(users.filter((user) => user.id !== id));
-    },
-    [users]
-  );
+  const onRemove = useCallback((id) => {
+    setUsers((users) => users.filter((user) => user.id !== id));
+  }, []);
 
-  const fontColorHandler = useCallback(
-    (id) => {
-      setUsers(
-        users?.map((user) =>
-          user.id === id ? { ...user, active: !user.active } : user
-        )
-      );
-    },
-    [users]
-  );
+  const fontColorHandler = useCallback((id) => {
+    setUsers((users) =>
+      users?.map((user) =>
+        user.id === id ? { ...user, active: !user.active } : user
+      )
+    );
+  }, []);
 
   const count = useMemo(() => countActiveUsers(users), [users]);
 

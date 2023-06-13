@@ -1,15 +1,6 @@
-import React, { useEffect } from "react";
+import React from "react";
 
-const User = ({ user, onRemove, fontColorHandler }) => {
-  // useEffect(() => {
-  //   console.log("컴포넌트가 화면에 나타남");
-  //   console.log(user);
-  //   return () => {
-  //     console.log("컴포넌트가 화면에서 사라짐");
-  //     console.log(user);
-  //   };
-  // }, [user]);
-
+const User = React.memo(({ user, onRemove, fontColorHandler }) => {
   return (
     <div>
       <b
@@ -25,7 +16,7 @@ const User = ({ user, onRemove, fontColorHandler }) => {
       <button onClick={() => onRemove(user.id)}>삭제</button>
     </div>
   );
-};
+});
 
 const UserList = ({ users, onRemove, fontColorHandler }) => {
   return (
@@ -42,4 +33,4 @@ const UserList = ({ users, onRemove, fontColorHandler }) => {
   );
 };
 
-export default UserList;
+export default React.memo(UserList);

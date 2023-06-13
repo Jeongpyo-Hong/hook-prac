@@ -9,7 +9,7 @@ const useInput = (initialForm) => {
       ...form,
       [name]: value,
     }));
-  });
+  }, []);
 
   const reset = useCallback(() => setForm(initialForm), [initialForm]);
 

@@ -1,11 +1,11 @@
-import React, { useCallback, useMemo, useReducer, useRef } from "react";
+import React, { useMemo, useReducer } from "react";
 import UserList from "./components/UserList";
 import CreateUser from "./components/CreateUser";
-import useInput from "./hooks/useInput";
+import { produce } from "immer";
 
 const countActiveUsers = (users) => {
   console.log("활성 사용자 수를 세는 중...");
-  return users.filter((user) => user.active === true).length;
+  return users.filter((user) => user.active).length;
 };
 
 const initialState = {
@@ -33,30 +33,51 @@ const initialState = {
 const reducer = (state, action) => {
   switch (action.type) {
     case "CREATE_USER":
-      return {
-        users: state.users.concat(action.user),
-      };
+      return produce(state, (draft) => {
+        draft.users.push(action.user);
+      });
     case "TOGGLE_USER":
-      return {
-        users: state.users.map((user) =>
-          user.id === action.id ? { ...user, active: !user.active } : user
-        ),
-      };
+      return produce(state, (draft) => {
+        const user = draft.users.find((user) => user.id === action.id);
+        user.active = !user.active;
+      });
     case "REMOVE_USER":
-      return {
-        users: state.users.filter((user) => user.id !== action.id),
-      };
+      return produce(state, (draft) => {
+        const index = draft.users.findIndex((user) => user.id === action.id);
+        draft.users.splice(index, 1);
+      });
     default:
       return state;
   }
+
+  // switch (action.type) {
+  //   case "CREATE_USER":
+  //     return produce(state, (draft) => {
+  //       draft.users.push(action.user);
+  //     });
+  //   case "TOGGLE_USER":
+  //     return produce(state, (draft) => {
+  //       const user = draft.users.find((user) => user.id === action.id);
+  //       user.active = !user.active;
+  //     });
+  //   case "REMOVE_USER":
+  //     return produce(state, (draft) => {
+  //       const index = draft.users.findIndex((user) => user.id === action.id);
+  //       draft.users.splice(index, 1);
+  //     });
+  //   default:
+  //     return state;
+  // }
 };
 
+// UserDispatch라는 이름으로 내보내기
 export const UserDispatch = React.createContext(null);
 
 const App = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const { users } = state;
+  console.log("users", users);
 
   const count = useMemo(() => countActiveUsers(users), [users]);
 
